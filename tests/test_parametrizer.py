@@ -37,6 +37,9 @@ def test_validate_stray_else():
     assert validate(Path('./test-5.ks')) == (False, 7, 'Stray else')
 
 
+def test_evaluate():
+    assert validate(Path('./test-5.ks')) == (False, 7, 'Stray else')
+
 
 
 
