@@ -58,7 +58,7 @@ def process_conditions(input_file: Path, condition: str, active: bool) -> (list[
                 in_else = False
                 continue
 
-            if not line.startswith(f'{if_stub}{condition}'):
+            if not line.startswith(f'{if_stub}{condition} -'):
                 # Other condition statements are just copied over.
                 output_io.write(line)
             else:
@@ -106,7 +106,6 @@ def validate(file: Path) -> (bool, int, str):
 
 
 if __name__ == '__main__':
-    print(sys.argv)
     if len(sys.argv) != 5:
         print('Usage: parametrize.py input.ks output.ks condition 0/1')
         sys.exit(1)

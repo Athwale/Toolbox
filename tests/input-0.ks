@@ -4,7 +4,7 @@ echo 'test' >> testfile
 sed -s
 #$$ else:
 if [ 1 -eq 1 ]; then
-    echo 'yes'
+echo 'yes'
 fi
 # TEST
 CONDITION test IS TURNED OFF

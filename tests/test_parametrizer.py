@@ -37,11 +37,26 @@ def test_validate_stray_else():
     assert validate(Path('./test-5.ks')) == (False, 7, 'Stray else')
 
 
-def test_evaluate():
-    assert validate(Path('./test-5.ks')) == (False, 7, 'Stray else')
+def test_evaluate_on():
+    comments, output = process_conditions(Path('./input-0.ks'), 'test', True)
+    assert comments == ['test test']
+    assert output.getvalue() == "echo 'test' >> testfile\n#CONDITION test IS TURNED ON\nsed -s\necho 'done'"
+    output.close()
 
 
+def test_evaluate_on_alt_name():
+    comments, output = process_conditions(Path('./input-1.ks'), 'test', True)
+    assert comments == ['test1', 'test2']
+    assert '#$$ if: test1 - test 1\n' in output.getvalue()
+    output.close()
 
+
+def test_evaluate_off():
+    comments, output = process_conditions(Path('./input-0.ks'), 'test', False)
+    assert comments == ['test test']
+    assert output.getvalue() == ("echo 'test' >> testfile\nif [ 1 -eq 1 ]; then\necho 'yes'\nfi\n# TEST\nCONDITION test"
+                                 " IS TURNED OFF\necho 'done'")
+    output.close()
 
 
 
