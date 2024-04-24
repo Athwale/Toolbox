@@ -117,10 +117,10 @@ if __name__ == '__main__':
         print(f'Processing file: {input_file}, condition: {condition}, state: {"ON" if state else "OFF"}')
         result, position, error = validate(Path(input_file))
         if result:
-            print('If statement syntax OK')
+            print('If/else syntax OK')
             condition_comments, output = process_conditions(Path(input_file), condition, state)
-            for c in condition_comments:
-                print(f'Evaluated: {c}')
+            for n, c in enumerate(condition_comments):
+                print(f'Evaluated {n}: {c}')
             print(f'File: {output_file} created. {len(condition_comments)} conditions evaluated')
 
             with open(Path(output_file), 'w') as o:
