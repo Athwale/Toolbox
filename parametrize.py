@@ -107,7 +107,8 @@ def validate(file: Path) -> (bool, int, str):
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
-        print('Usage: parametrize.py input.ks output.ks condition 0/1')
+        print('Usage: parametrize.py input_file output_file condition_name 0/1')
+        print('#$$ if: secure - test 1\n  COMMAND 1\n#$$ else:\n  COMMAND 2\n#$$ fi')
         sys.exit(1)
     try:
         input_file: str = sys.argv[1]
