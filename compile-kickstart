@@ -1,8 +1,0 @@
-#!/bin/bash
-
-git clone https://pagure.io/fedora-kickstarts.git
-cd fedora-kickstarts/
-git checkout -b f${1} origin/f${1}
-ksflatten --config fedora-live-xfce.ks -o flat-fedora-live-f${1}.ks
-cp flat-fedora-live-f${1}.ks ..
-cd ..
