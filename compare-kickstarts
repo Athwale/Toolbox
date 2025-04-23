@@ -1,0 +1,66 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Argument 1 must be a fedora version - 40"
+    exit 1
+fi
+
+if [ -z "$2" ]; then
+    echo "Argument 2 must be a fedora version - 41"
+    exit 1
+fi
+
+START=$(pwd)
+mkdir fedora-temp
+cd fedora-temp
+    DIR=$(pwd)
+    echo "Clone fedora kickstart repo:"
+    git clone https://pagure.io/fedora-kickstarts.git
+    if ! test -e ./fedora-kickstarts; then
+        echo "Cloning fail"
+        exit 1
+    fi
+
+    cd fedora-kickstarts
+
+    # Kickstart 1:
+    echo "Check out branch $1"
+    git checkout -b f"$1" origin/f"$1"
+    if [ $? -eq 0 ]; then
+        echo "Checkout ok"
+        git branch
+    fi
+
+    echo "Create kickstart - $1:"
+    ksflatten --config fedora-live-xfce.ks -o flat-fedora-live-"$1".ks
+    cp flat-fedora-live-"$1".ks "$DIR"
+    echo "Kickstart copied into $DIR/flat-fedora-live-"$1".ks"
+
+    cd "$DIR"
+    cd fedora-kickstarts
+
+    # Kickstart 2:
+    echo "Check out branch $2"
+    git checkout -b f"$2" origin/f"$2"
+    if [ $? -eq 0 ]; then
+        echo "Checkout ok"
+        git branch
+    fi
+
+    echo "Create kickstart - $2:"
+    ksflatten --config fedora-live-xfce.ks -o flat-fedora-live-"$2".ks
+    cp flat-fedora-live-"$2".ks "$DIR"
+    echo "Kickstart copied into $DIR/flat-fedora-live-"$2".ks"
+    echo
+
+    cd "$DIR"
+    diff flat-fedora-live-"$1".ks flat-fedora-live-"$2".ks > differences
+    if [ $(cat differences | wc -l) -gt 0 ]; then
+        echo "### Differences found: ############################"
+        cat differences
+    else
+        echo "### No differences ################################"
+        echo
+    fi
+cd "$START"
+rm -rf fedora-temp
