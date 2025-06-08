@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Argument 1 must be a fedora version - 40"
+    exit 1
+fi
+
+DIR=$(pwd)
+echo "Clone fedora kickstart repo:"
+git clone https://pagure.io/fedora-kickstarts.git
+cd fedora-kickstarts
+git pull
+
+echo "Check out branch $1"
+git checkout -b f"$1" origin/f"$1"
+if [ $? -eq 0 ]; then
+    echo "Checkout ok"
+    git branch
+fi
+
+echo "Create kickstart:"
+ksflatten --config fedora-live-xfce.ks -o flat-fedora-live-"$1".ks
+cp flat-fedora-live-"$1".ks "$DIR"
+echo "Kickstart copied into $DIR/flat-fedora-live-"$1".ks"
