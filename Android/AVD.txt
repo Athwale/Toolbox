@@ -1,0 +1,3 @@
+Mount Android Studio avd images:
+sudo mount -o loop,ro,offset=$((6144*512)) system.img mounted/
+sudo mount -t auto -o ro,loop,offset=$((2048*512)) vendor.img mounted/

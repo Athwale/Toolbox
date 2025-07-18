@@ -1,0 +1,21 @@
+https://stackoverflow.com/questions/79695806/why-are-some-android-apks-jar-archives-and-some-are-zip
+
+Decompile:
+../Tools/apktool/apktool d -r -s Settings.apk
+
+Hex edit.
+
+Fix dex checksum.
+https://indalok.medium.com/helloworld-goodbye-protection-disassembling-a-broken-dex-challenge-b8b34d6e08d8
+../Tools/DexRepair.py -o repaired.dex ./classes2.dex
+
+Compile:
+../Tools/apktool/apktool b Settings
+
+Align:
+Android/Sdk/build-tools/30.0.2/zipalign -v 4 SettingsRe.apk SettingsAl.apk
+
+Sign:
+Android/Sdk/build-tools/30.0.2/apksigner sign --ks AndroidStudioProjects/key.jks SettingsAl.apk
+
+Test in jadx, no error in checksum should show up and sig should be ok.
