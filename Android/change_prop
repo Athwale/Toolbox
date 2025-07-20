@@ -1,0 +1,60 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: change_prop <prop name> <new value> <Unpacked Super directory>"
+    echo './Tools/change_prop "ro.rk.bt_enable" "false" ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - prop name missing"
+    print_help
+    exit 1
+fi
+
+if test -z "$2"; then
+    echo "Parameter 2 - prop value missing"
+    print_help
+    exit 1
+fi
+
+if test -z "$3"; then
+    echo "Parameter 3 - Super directory missing"
+    print_help
+    exit 1
+fi
+
+FOUND=0
+D=$(pwd)
+mkdir -p mounted
+for img in $(ls $3/*); do
+    sudo mount -t ext4 -o rw,loop $img ./mounted/
+    show_info "IMG: $img"
+    cd ./mounted/
+    for f in build.prop prop.default default.prop; do
+        for p in $(sudo find . -name "$f"); do
+            echo "$p"
+            S1=$(sudo grep "$1=" "$p")
+            if ! [ -z $S1 ]; then
+                FOUND=1
+            fi
+                sudo sed -i "s|$1=.*|$1=$2|g" "$p"
+                if [ $? -ne 0 ]; then
+                    show_err "ERROR writing parameter"
+                fi
+            S2=$(sudo grep "$1=" "$p") 
+            if ! test -z $S2; then
+                show_ok "Changed: $S1 -> $S2"
+            else
+                show_info "No change"
+            fi
+        done
+    done
+    cd "$D"
+    echo
+    sudo umount $D/mounted/
+done
+if [ $FOUND -eq 0 ]; then
+    show_warn "Parameter $1 not found"
+fi
