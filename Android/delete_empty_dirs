@@ -1,0 +1,89 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: delete_empty_dirs <Unpacked Super directory>"
+    echo './Tools/delete_empty_dirs ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - Super directory missing"
+    print_help
+    exit 1
+fi
+
+D=$(pwd)
+mkdir -p mounted
+for img in $(ls $1/*); do
+    sudo mount -t ext4 -o rw,loop $img ./mounted/
+    show_info "Image: $img"
+    cd ./mounted/
+        cd ./app 2>/dev/null
+            if [ $? -eq 0 ]; then
+                show_ok "$(pwd)"
+                for p in $(ls); do
+                    N=$(find ./"$p" -type f 2>/dev/null | wc -l) 
+                    if [ $N -eq 0 ]; then
+                        echo "Delete: app/$p"
+                        sudo rm -rf "./$p"
+                    fi
+                done
+            fi
+        cd $D/mounted/
+        # ----------------------------------------------- 
+        cd ./priv-app 2>/dev/null
+            if [ $? -eq 0 ]; then
+                show_ok "$(pwd)"
+                for p in $(ls); do
+                    N=$(find ./"$p" -type f 2>/dev/null | wc -l) 
+                    if [ $N -eq 0 ]; then
+                        echo "Delete: priv-app/$p"
+                        sudo rm -rf "./$p"
+                    fi  
+                done
+            fi
+        cd $D/mounted/
+        # ----------------------------------------------- 
+        cd ./system/app 2>/dev/null
+            if [ $? -eq 0 ]; then
+                show_ok "$(pwd)"
+                for p in $(ls); do
+                    N=$(find ./"$p" -type f 2>/dev/null | wc -l)
+                    if [ $N -eq 0 ]; then
+                        echo "Delete: app/$p"
+                        sudo rm -rf "./$p"
+                    fi
+                done
+            fi
+        cd $D/mounted/
+        # ----------------------------------------------- 
+        cd ./system/priv-app 2>/dev/null
+            if [ $? -eq 0 ]; then
+                show_ok "$(pwd)"
+                for p in $(ls); do
+                    N=$(find ./"$p" -type f 2>/dev/null | wc -l)
+                    if [ $N -eq 0 ]; then
+                        echo "Delete: priv-app/$p"
+                        sudo rm -rf "./$p"
+                    fi
+                done
+            fi
+        cd $D/mounted/
+        # ----------------------------------------------- 
+        cd ./overlay 2>/dev/null
+            if [ $? -eq 0 ]; then
+                show_ok "$(pwd)"
+                for p in $(ls); do
+                    N=$(find ./"$p" -type f 2>/dev/null | wc -l)
+                    if [ $N -eq 0 ]; then
+                        echo "Delete: overlay/$p"
+                        sudo rm -rf "./$p"
+                    fi
+                done
+            fi
+        cd $D/mounted/
+    cd $D
+    sudo umount $D/mounted
+done
+echo
