@@ -1,0 +1,29 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+if ! test -e ./super_new.img; then
+    show_err "./super_new.img not found"
+    exit 1
+fi
+
+show_info "Killing adb server"
+adb kill-server
+sleep 1
+show_info "Starting adb server"
+adb start-server
+sleep 3
+show_info "Reboot to fastboot"
+adb reboot fastboot
+if [ $? -eq 1 ]; then
+    show_err "No device connected"
+    exit 1
+fi
+show_ok "Device found"
+show_info "Wait 15s"
+sleep 15
+show_info "Flashing start"
+fastboot flash super ./super_new.img
+sleep 3
+show_info "Reboot"
+fastboot reboot
