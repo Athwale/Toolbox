@@ -38,8 +38,31 @@ function find_upgrade_tool() {
     echo ""
 }
 
+function verify_adb() {
+    adb devices -l | grep -qw 'device'
+    if [ $? -eq 0 ]; then
+        show_ok "Device found"
+    else
+        show_info "Restart adb server"
+        adb kill-server
+        adb start-server
+        sleep 1
+        adb devices -l | grep -qw 'device'
+        if [ $? -eq 0 ]; then
+            show_ok "ADB device found"
+        else
+            show_err "No device"
+            exit 1
+        fi
+    fi
+}
 
-
+function ding() {
+    if which paplay &>/dev/null; then
+        S=$(find . -name ding.wav)
+        paplay "$S"
+    fi
+}
 
 
 
