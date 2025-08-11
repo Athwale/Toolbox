@@ -2,6 +2,7 @@
 
 . $(find . -name crema-common-lib.sh)
 
+# Adb ------------------------------------------------------
 show_info "Start adb"
 adb kill-server
 adb start-server
@@ -56,12 +57,17 @@ adb shell settings list global
 adb shell settings list secure
 show_ok "ADB commands done"
 echo
+
+# Fastboot ------------------------------------------------------
 show_info "Reboot to fastboot"
 adb reboot fastboot
 sleep 15
 show_info "Fastboot information:"
 show_info "Device:"
 fastboot devices
+echo
+show_info "Flashing:"
+fastboot flashing get_unlock_ability
 echo
 show_info "Vars:"
 fastboot getvar all
@@ -71,3 +77,4 @@ fastboot oem device-info
 echo
 fastboot reboot
 show_ok "Done"
+ding
