@@ -87,3 +87,4 @@ for img in $(ls $1/*); do
     sudo umount $D/mounted
 done
 echo
+ding
