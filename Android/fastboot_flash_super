@@ -7,23 +7,37 @@ if ! test -e ./super_new.img; then
     exit 1
 fi
 
-show_info "Killing adb server"
-adb kill-server
-sleep 1
-show_info "Starting adb server"
-adb start-server
-sleep 3
-show_info "Reboot to fastboot"
-adb reboot fastboot
-if [ $? -eq 1 ]; then
-    show_err "No device connected"
+SKIP=0
+if fastboot devices | grep -q 'fastboot'; then
+    SKIP=1
+fi
+
+if [ $SKIP -eq 0 ]; then
+    verify_adb
+    sleep 1
+    show_info "Reboot to fastboot"
+    adb reboot fastboot
+    if [ $? -eq 1 ]; then
+        show_err "No device connected"
+        exit 1
+    fi
+fi
+
+if [ $SKIP -eq 0 ]; then
+    show_info "Wait 15s"
+    sleep 15
+fi
+
+if fastboot devices | grep -q 'fastboot'; then
+    show_ok "Fastboot connected"
+else
+    show_err "No fastboot device connected"
     exit 1
 fi
-show_ok "Device found"
-show_info "Wait 15s"
-sleep 15
+
 show_info "Flashing start"
 fastboot flash super ./super_new.img
 sleep 3
 show_info "Reboot"
 fastboot reboot
+ding
