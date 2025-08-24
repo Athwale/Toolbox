@@ -1,0 +1,35 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: find_file <file> <Unpacked Super directory>"
+    echo './Tools/find_file "Settings.apk" ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - file name missing"
+    print_help
+    exit 1
+fi
+
+if test -z "$2"; then
+    echo "Parameter 2 - Super directory missing"
+    print_help
+    exit 1
+fi
+
+D=$(pwd)
+mkdir -p mounted
+for img in $(ls $2/*); do
+    sudo mount -t ext4 -o ro,loop $img ./mounted/
+    show_info "IMG: $img"
+    cd ./mounted/
+        for p in $(sudo find . -name "*$1*"); do
+            echo "$p"
+        done
+    cd "$D"
+    echo
+    sudo umount $D/mounted/
+done
+ding
