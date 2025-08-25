@@ -1,0 +1,35 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: find_settings <String>"
+    echo './Tools/find_settings show_password'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - string missing"
+    print_help
+    exit 1
+fi
+
+verify_adb
+
+show_info "Global:"
+adb shell settings list global | grep "$1"
+if [ $? -eq 1 ]; then
+    show_warn " Nothing"
+fi
+
+show_info "Secure:"
+adb shell settings list secure | grep "$1"
+if [ $? -eq 1 ]; then
+    show_warn " Nothing"
+fi
+
+show_info "System:"
+adb shell settings list system | grep "$1"
+if [ $? -eq 1 ]; then
+    show_warn " Nothing"
+fi
+
