@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: find_string <String> <APK directory>"
+    echo './Tools/find_string_in_apk "mode_istay" ./APKS'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - string missing"
+    print_help
+    exit 1
+fi
+
+if test -z "$2"; then
+    echo "Parameter 2 - directory missing"
+    print_help
+    exit 1
+fi
+
+if ! test -e "$2"; then
+    show_err "Directory not found"
+    print_help
+    exit 1
+fi
+
+FOUND=0
+for apk in $(ls $2); do
+    sudo strings "$2/$apk" | grep -q "$1"
+    if [ $? -eq 0 ]; then
+        show_ok "Found in: $apk"
+        FOUND=1
+    fi
+done
+if [ $FOUND -eq 0 ]; then
+    show_info "Not found"
+fi
+
