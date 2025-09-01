@@ -1,0 +1,94 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+TOOL="$(find_upgrade_tool)"
+
+function get_address() {
+cat <<- 'END' | grep -w "$1" | awk '{ print $2 }'
+security 0x00002000
+uboot_a 0x00004000
+uboot_b 0x00006000
+waveform 0x00008000
+trust_a 0x00009000
+trust_b 0x0000b000
+misc 0x0000d000
+dtbo_a 0x0000f000
+dtbo_b 0x00011000
+vbmeta_a 0x00013000
+vbmeta_b 0x00013800
+boot_a 0x00014000
+boot_b 0x00054000
+backup 0x00094000
+cache 0x00154000
+metadata 0x00214000
+baseparameter 0x0021c000
+super 0x0021c800
+logo_a 0x00c1e800
+logo_b 0x00c26800
+userdata 0x00c2e800
+END
+}
+
+print_help() {
+    echo "Flash all files from a folder. File names must corespond with partition names."
+    echo "uboot_a -> uboot_a.img"
+    echo -e "\nUsage:"
+    echo "flash_all <folder with image files>"
+    echo "flash_all ./Firmware"
+}
+
+if ! test -e "$1"; then
+    echo "Folder with images not found."
+    print_help
+    exit 1
+fi
+
+if ! test -e "$TOOL"; then
+    echo "Upgrade tool not found in: $TOOL"
+    exit 1
+fi
+
+if ! file "$TOOL" | grep 'ELF 64-bit LSB executable'; then
+    echo "Upgrade tool not found in: $TOOL is incorrect."
+    exit 1
+fi
+
+for file in $(ls $1); do
+    PF=$(echo "$file" | awk -F'.' '{ print $1 }')
+    ADR=$(get_address "$PF")
+    if test -z "$ADR"; then
+        show_err "Address for: '$file' not found"
+        exit 1
+    else
+        show_ok "$file -> $PF -> $ADR"
+    fi
+done
+
+show_info "\nFlash start"
+
+$TOOL td
+if [ $? -ne 0 ]; then
+    show_info "Reboot device into loader mode"
+    adb reboot loader
+    show_info "Wait 10s"
+    sleep 10
+
+    if [ $? -ne 0 ]; then
+        show_err "ADB fail"
+        exit 1
+    fi  
+fi
+
+for file in $(ls $1); do
+    PF=$(echo "$file" | awk -F'.' '{ print $1 }')
+    ADR=$(get_address "$PF")    
+
+    show_info "Flashing $file as $PF"
+    $TOOL wl "$ADR" "$1/$file"    
+done
+
+show_ok "Flash done, Reboot"
+$TOOL rd
+
+ding
