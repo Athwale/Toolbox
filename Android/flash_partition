@@ -1,0 +1,117 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+TOOL="$(find_upgrade_tool)"
+
+function get_address() {
+cat <<- 'END' | grep -w "$1" | awk '{ print $2 }'
+security 0x00002000
+uboot_a 0x00004000
+uboot_b 0x00006000
+waveform 0x00008000
+trust_a 0x00009000
+trust_b 0x0000b000
+misc 0x0000d000
+dtbo_a 0x0000f000
+dtbo_b 0x00011000
+vbmeta_a 0x00013000
+vbmeta_b 0x00013800
+boot_a 0x00014000
+boot_b 0x00054000
+backup 0x00094000
+cache 0x00154000
+metadata 0x00214000
+baseparameter 0x0021c000
+super 0x0021c800
+logo_a 0x00c1e800
+logo_b 0x00c26800
+userdata 0x00c2e800
+END
+}
+
+function print_help() {
+    show_err "Wrong input"
+    echo -e "\nUsage:"
+    echo "flash_parition <partition> <image file> <1>"
+    echo "flash_parition logo_a ./logo_a.img 1"
+    echo "If last parameter is 1, adb server is restarted before flashing."
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - partition name missing"
+    print_help
+    exit 1
+fi
+
+if test -z "$2"; then
+    echo "Parameter 2 - image file missing"
+    print_help
+    exit 1
+fi
+
+if ! test -e "$TOOL"; then
+    show_err "Upgrade tool not found in: $TOOL"
+    exit 1
+fi
+
+if ! test -e "$2"; then
+    show_err "Image file: '$2' not found"
+    exit 1
+fi
+
+ADR=$(get_address "$1")
+FILE="$2"
+PART="$1"
+if test -z "$ADR"; then
+    show_err "ERROR - partition name: '$1' not found in table."
+    exit 1
+fi
+
+if [ $(basename "$FILE") != "${PART}.img" ]; then
+    show_warn "Parition name: $PART differs from $(basename "$FILE" | awk -F'.' '{ print $1 }')"
+    read -p "Continue? (y/n)[n]: " confirm 
+    if [ $confirm == 'y' ]; then
+        show_warn "Warning file name override"
+    else
+        show_info "STOP"
+        exit 1
+    fi
+fi
+
+echo
+show_info "Flash start"
+
+$TOOL td
+
+if [ $? -ne 0 ]; then
+    show_info "Reboot device into loader mode"
+    if ! [ -z $3 ]; then
+        show_info "Killing adb server"
+        adb kill-server
+        sleep 1
+        show_info "Starting adb server"
+        adb start-server
+        sleep 2
+    fi
+    adb reboot loader
+    show_info "Wait 10s"
+    sleep 10
+
+    if [ $? -ne 0 ]; then
+        show_err "ADB fail"
+        exit 1
+    fi
+fi
+
+show_info "Flashing $FILE as $PART"
+$TOOL wl "$ADR" "$FILE"
+if [ $? -eq 0 ]; then
+    show_ok "Flash done, Reboot"
+    $TOOL rd
+else
+    show_err "Flash fail"
+    show_warn "Reboot skipped"
+fi
+
+ding
