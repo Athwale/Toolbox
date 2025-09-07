@@ -1,0 +1,45 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: list_apks <Unpacked Super directory>"
+    echo './Tools/list_apks ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 2 - Super directory missing"
+    print_help
+    exit 1
+fi
+
+show_info "Output in: ./APKS"
+rm -rf "./APKS"
+mkdir -p "./APKS"
+echo > ./APKS/md5sums.txt
+D=$(pwd)
+mkdir -p mounted
+for img in $(ls $1/*); do
+    sudo mount -t ext4 -o ro,loop $img ./mounted/
+    show_info "IMG: $img"
+    cd ./mounted/
+        for p in $(sudo find . -name *.apk); do
+            MD5=$(sudo md5sum $p | awk '{ print $1 }')
+            echo "$p $MD5"
+            if grep -q "$MD5" ../APKS/md5sums.txt; then 
+                show_info "Duplicate package."
+            else 
+                show_ok "-- Copying."
+                echo "$MD5" >> ../APKS/md5sums.txt
+                if test -e ../APKS/$(basename "$p"); then
+                    show_info "--- Package already exists in APKS, renaming"
+                    sudo cp $p ../APKS/second_$(basename "$p")
+                else
+                    sudo cp $p ../APKS
+                fi
+            fi
+        done
+    cd "$D"
+    echo
+    sudo umount $D/mounted/
+done
