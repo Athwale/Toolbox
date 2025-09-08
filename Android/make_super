@@ -1,0 +1,41 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: make_super <Unpacked Super directory>"
+    echo './Tools/make_super ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - super directory missing"
+    print_help
+    exit 1
+fi
+
+show_info "Building /super_new.img"
+
+lpmake \
+ --super-name super \
+ --metadata-size 65536 \
+ --metadata-slots 2 \
+ --device super:5372903424 \
+ --group main:3435237376 \
+ -p "odm_a:readonly:724992:main" -i "odm_a=$1/odm_a.img" \
+ -p "odm_b:readonly:724992:main" -i "odm_b=$1/odm_b.img" \
+ -p "product_a:readonly:100376576:main" -i "product_a=$1/product_a.img" \
+ -p "product_b:readonly:100376576:main" -i "product_b=$1/product_b.img" \
+ -p "system_a:readonly:1373356032:main" -i "system_a=$1/system_a.img" \
+ -p "system_b:readonly:1372413952:main" -i "system_b=$1/system_b.img" \
+ -p "system_ext_a:readonly:114122752:main" -i "system_ext_a=$1/system_ext_a.img" \
+ -p "system_ext_b:readonly:114122752:main" -i "system_ext_b=$1/system_ext_b.img" \
+ -p "vendor_a:readonly:130322432:main" -i "vendor_a=$1/vendor_a.img" \
+ -p "vendor_b:readonly:128696320:main" -i "vendor_b=$1/vendor_b.img" \
+ --output ./super_new.img
+
+if [ $? -ne 0 ]; then
+    show_err "Failed"
+else
+    show_info "Output in: ./super_new.img"
+    show_ok "Done"
+fi
