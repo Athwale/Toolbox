@@ -1,0 +1,46 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+TOOL=$(find . -name rmapk)
+TOOL1=$(find . -name delete_empty_dirs)
+
+function print_help() {
+    echo "Usage: remove_removable_apks <List> <Unpacked Super directory>"
+    echo './Tools/remove_removable_apks removable_apks.txt ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - super apk list missing"
+    print_help
+    exit 1
+fi
+
+if test -z "$2"; then
+    echo "Parameter 2 - super directory missing"
+    print_help
+    exit 1
+fi
+
+if ! test -e "$1"; then
+    show_err "File list not found"
+    print_help
+    exit 1
+fi
+
+if ! test -e "$TOOL"; then
+    show_err "$TOOL not found"
+    exit 1
+fi
+
+if ! test -e "$TOOL1"; then
+    show_err "$TOOL1 not found"
+    exit 1
+fi
+
+show_info "Removing APKs"
+for apk in $(cat $1); do
+    "$TOOL" "$apk" "$2"
+done
+show_info "Removing empty dirs"
+$TOOL1 "$2"
+ding
