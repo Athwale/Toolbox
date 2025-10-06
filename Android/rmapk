@@ -1,0 +1,44 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: rmapk <apk> <Unpacked Super directory>"
+    echo './Tools/rmapk Settings.apk ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - file name missing"
+    print_help
+    exit 1
+fi
+
+if test -z "$2"; then
+    echo "Parameter 2 - Super directory missing"
+    print_help
+    exit 1
+fi
+
+FOUND=0
+D=$(pwd)
+mkdir -p mounted
+for img in $(ls $2/*); do
+    sudo mount -t ext4 -o rw,loop $img ./mounted/
+    cd ./mounted/
+        filename=$(echo $1 | awk -F'.' '{ print $1 }')
+        for p in $(sudo find . -name "$filename\.*"); do
+            show_info "Found in img: $img: $p"
+            FOUND=1
+            sudo rm "$p"
+            if [ $? -eq 0 ]; then 
+                show_ok " Removed: $p" 
+            else
+                show_err " ERROR removing $p"
+            fi
+        done
+    cd $D
+    sudo umount $D/mounted/
+done
+if [ $FOUND -eq 0 ]; then
+    show_warn "APK not found: $1"
+fi
