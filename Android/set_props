@@ -1,0 +1,37 @@
+#!/bin/bash
+
+. $(find . -name crema-common-lib.sh)
+
+function print_help() {
+    echo "Usage: set_props <Unpacked Super directory>"
+    echo './Tools/set_props ./Firmware/Super_unpacked/'
+}
+
+if test -z "$1"; then
+    echo "Parameter 1 - Super directory missing"
+    print_help
+    exit 1
+fi
+
+show_info "Start"
+./Tools/change_prop "persist.sys.timezone" "Europe/Prague" "$1"
+./Tools/change_prop "ro.product.locale" "en_US" "$1"
+./Tools/change_prop "persist.sys.usb.config" "none" "$1"
+./Tools/change_prop "ro.adb.secure" "1" "$1"
+./Tools/change_prop "ro.debuggable" "0" "$1"
+./Tools/change_prop "security.perf_harden" "1" "$1"
+./Tools/change_prop "persist.traced.enable" "0" "$1"
+./Tools/change_prop "ro.com.android.dataroaming" "false" "$1"
+./Tools/change_prop "ro.haoqing.location_detection" "0" "$1"
+./Tools/change_prop "ro.ril.ecclist" "112" "$1"
+./Tools/change_prop "ro.rk.flash_enable" "false" "$1"
+./Tools/change_prop "ro.rk.hdmi_enable" "false" "$1"
+./Tools/change_prop "ro.statsd.enable" "false" "$1"
+./Tools/change_prop "ro.tether.denied" "true" "$1"
+./Tools/change_prop "ro.vendor.hdmi_settings" "false" "$1"
+./Tools/change_prop "persist.hq.debug" "false" "$1"
+./Tools/change_prop "ro.rk.bt_enable" "false" "$1"
+./Tools/change_prop "sys.rkadb.root" "0" "$1"
+./Tools/change_prop "ro.oem_unlock_supported" "0" "$1"
+show_ok "Done"
+ding
