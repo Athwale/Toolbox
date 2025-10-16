@@ -1,3 +1,4 @@
+https://android.stackexchange.com/questions/262012/adding-system-level-permission-app-to-an-existing-android-rom
 https://stackoverflow.com/questions/79695806/why-are-some-android-apks-jar-archives-and-some-are-zip
 
 Decompile:
